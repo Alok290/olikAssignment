@@ -16,10 +16,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
-
 @Service
 public class BookServiceImpl implements BookService {
-
 
     @Autowired
     private BookRepository bookRepository;
@@ -27,33 +25,37 @@ public class BookServiceImpl implements BookService {
     @Autowired
     private AuthorRepository authorRepository;
 
-
     @Override
     public String save(BookRequestDto bookRequestDto) throws Exception {
-
+        // Convert the request DTO to a Book entity
         Book book = BookTransformation.convertEntity(bookRequestDto);
+
+        // Check if the book with the same ISBN already exists
         Optional<Book> optionalBook = bookRepository.findByIsbn(book.getIsbn());
-        if(optionalBook.isPresent()){
-            throw new bookAlreadyPresent("this book is already present");
+        if (optionalBook.isPresent()) {
+            throw new bookAlreadyPresent("This book is already present");
         }
 
+        // Retrieve the author based on the author ID from the request DTO
         Author author = authorRepository.findById(bookRequestDto.getAuthorId()).get();
         book.setAuthor(author);
         author.getBookList().add(book);
 
+        // Save the author (and the associated book) to the database
         authorRepository.save(author);
 
-        return "book successfully saved";
+        return "Book successfully saved";
     }
 
     @Override
     public BookResponseDto getBookByTitle(String title) throws Exception {
-
+        // Find the book by its title
         Optional<Book> optionalBook = bookRepository.findByTitle(title);
-        if(optionalBook.isEmpty()){
-            throw new bookNotPresent("this book is not present");
+        if (optionalBook.isEmpty()) {
+            throw new bookNotPresent("This book is not present");
         }
 
+        // Convert the Book entity to a response DTO
         Book book = optionalBook.get();
         BookResponseDto responseDto = BookTransformation.convertIntoResponse(book);
 
@@ -62,30 +64,39 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public List<Book> getAll() throws Exception {
+        // Retrieve all books from the repository
         return bookRepository.findAll();
     }
 
     @Override
     public String update(BookRequestDto requestDto) throws Exception {
-        Book book = BookTransformation.convertEntity(requestDto);
-        Optional<Book> optionalBook = bookRepository.findByIsbn(book.getIsbn());
-        if(optionalBook.isPresent()){
-            throw new bookAlreadyPresent("this book is already present");
+        // Find the book by its ISBN
+        Optional<Book> optionalBook = bookRepository.findByIsbn(requestDto.getIsbn());
+        if (optionalBook.isEmpty()) {
+            throw new bookNotPresent("This book is not present");
         }
-        return "";
+
+        // Update the book title if provided in the request DTO
+        Book book = optionalBook.get();
+        if (requestDto.getTitle() != null) {
+            book.setTitle(requestDto.getTitle());
+        }
+
+        return "Congratulations! You've updated the book.";
     }
 
     @Override
     public String delete(Integer id) throws Exception {
+        // Find the book by its ID
         Optional<Book> optionalBook = bookRepository.findById(id);
-        if(optionalBook.isEmpty()){
-            throw new bookAlreadyPresent("this book is not present");
+        if (optionalBook.isEmpty()) {
+            throw new bookAlreadyPresent("This book is not present");
         }
 
+        // Delete the book from the repository
         Book book = optionalBook.get();
-
         bookRepository.delete(book);
 
-        return "book is deleted successfully";
+        return "Book is deleted successfully";
     }
 }
