@@ -1,4 +1,4 @@
-package com.example.olikAssignment.Service.Impl;
+package com.example.olikAssignment.Service;
 
 import com.example.olikAssignment.Dtos.RequestDto.RentalRequestDto;
 import com.example.olikAssignment.Exceptions.bookNotPresent;
