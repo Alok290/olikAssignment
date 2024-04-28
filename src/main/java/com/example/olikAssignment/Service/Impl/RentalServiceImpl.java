@@ -50,12 +50,16 @@ public class RentalServiceImpl implements RentalService {
             throw new bookNotPresent("this book is already rented");
         }
 
+        book.setIsAvailable(false);
+
         // Set the rental to the book and vice versa
         book.setRental(rental);
         rental.setBook(book);
 
         // Save the book to the repository
         bookRepository.save(book);
+
+
 
         // Return a success message
         return "the book name is "+book.getTitle()+" is rented by "+rental.getRenterName();
@@ -86,6 +90,8 @@ public class RentalServiceImpl implements RentalService {
         // Calculate the number of days between renting and returning
         long diffInMillies = Math.abs(rental.getReturnDate().getTime() - rental.getRentalDate().getTime());
         long diffInDays = diffInMillies / (24 * 60 * 60 * 1000);
+
+        book.setIsAvailable(true);
 
         // Save the updated entities
         rentalRepository.save(rental);
